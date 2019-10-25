@@ -22,6 +22,16 @@ public class ModelHandler : MonoBehaviour
     private ARSession my_session;
     private List<Vector3> points = new List<Vector3>();
 
+    /*Settings*/
+    public GameObject settingsPanel;
+    public Toggle visualizationToggle;
+
+    /*Save */
+    public GameObject savePanel;
+    public InputField saveNameInputField;
+    private string saveName;
+    public Button confirmSaveButton;
+
     private bool placementFinished = false;
 
     // Start is called before the first frame update
@@ -31,9 +41,17 @@ public class ModelHandler : MonoBehaviour
         pointCloudHandler = GetComponent<PointCloudHandler>();
         communication = GetComponent<Communication>();
 
-        saveButton.onClick.AddListener(SavePointCloud);
+        savePanel.SetActive(false);
+        settingsPanel.SetActive(false);
+
+        saveButton.onClick.AddListener(SetActiveSavePanel);
         placeButton.onClick.AddListener(placementHandler.PlaceObject_async);
         settingsButton.onClick.AddListener(SettingsClicked);
+        visualizationToggle.onValueChanged.AddListener(delegate { SetPointCloudVisualization(pointCloudVisualizationToggle); });
+        saveNameInputField.onEndEdit.AddListener(SetSaveName);
+        confirmSaveButton.onClick.AddListener(SavePointCloud);
+
+        confirmSaveButton.interactable = false;
     }
 
     // Update is called once per frame
@@ -71,6 +89,7 @@ public class ModelHandler : MonoBehaviour
 
     private void SettingsClicked()
     {
+        settingsPanel.SetActive(true);
         //beállítási lehetőségek, panel
     }
 
@@ -101,5 +120,20 @@ public class ModelHandler : MonoBehaviour
         byte[] msg_bin = byteList.ToArray();
         communication.Publish(msg_bin);
         points.Clear();
+    }
+
+    private void SetPointCloudVisualization(Toggle toggle)
+    {
+        pointCloudHandler.SetPointCloudVisualization(toggle.isOn);    
+    }
+
+    private void SetSaveName(string arg){
+        saveName = arg;
+        if(arg.Length > 0)
+            confirmSaveButton.interactable = true;
+    }
+
+    private void SetActiveSavePanel(){
+        savePanel.SetActive(true);
     }
 }
